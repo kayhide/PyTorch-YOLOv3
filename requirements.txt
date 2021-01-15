@@ -1,3 +1,4 @@
+clearml
 numpy
 torch>=1.2
 torchvision
