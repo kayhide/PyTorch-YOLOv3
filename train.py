@@ -23,7 +23,18 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
+from clearml import Task, Logger
+
 if __name__ == "__main__":
+    model_snapshots_path = os.getenv('TRAINS_ROOT')
+
+    if not os.path.exists(model_snapshots_path):
+        os.makedirs(model_snapshots_path)
+
+    task = Task.init(project_name='PyTorch Yolo',
+            task_name='first',
+            output_uri=model_snapshots_path)
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
@@ -32,6 +43,7 @@ if __name__ == "__main__":
     parser.add_argument("--data_config", type=str, default="config/coco.data", help="path to data config file")
     parser.add_argument("--pretrained_weights", type=str, help="if specified starts from checkpoint model")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
+    parser.add_argument('--no_cuda', default=False, action='store_true', help='disables CUDA')
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
     parser.add_argument("--checkpoint_interval", type=int, default=1, help="interval between saving model weights")
     parser.add_argument("--evaluation_interval", type=int, default=1, help="interval evaluations on validation set")
@@ -41,8 +53,10 @@ if __name__ == "__main__":
     opt = parser.parse_args()
     print(opt)
 
-    logger = Logger("logs")
+    logger = Logger.current_logger()
 
+    if opt.no_cuda:
+        torch.cuda.is_available = lambda: False
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     os.makedirs("output", exist_ok=True)
@@ -128,14 +142,21 @@ if __name__ == "__main__":
                 row_metrics = [formats[metric] % yolo.metrics.get(metric, 0) for yolo in model.yolo_layers]
                 metric_table += [[metric, *row_metrics]]
 
-                # Tensorboard logging
-                tensorboard_log = []
+                # # Tensorboard logging
+                # tensorboard_log = []
+                # for j, yolo in enumerate(model.yolo_layers):
+                #     for name, metric in yolo.metrics.items():
+                #         if name != "grid_size":
+                #             tensorboard_log += [(f"{name}_{j+1}", metric)]
+                # tensorboard_log += [("loss", loss.item())]
+                # logger.list_of_scalars_summary(tensorboard_log, batches_done)
+                # 
+                # # ClearML logging
                 for j, yolo in enumerate(model.yolo_layers):
                     for name, metric in yolo.metrics.items():
                         if name != "grid_size":
-                            tensorboard_log += [(f"{name}_{j+1}", metric)]
-                tensorboard_log += [("loss", loss.item())]
-                logger.list_of_scalars_summary(tensorboard_log, batches_done)
+                            logger.report_scalar(
+                                "train", f"{name}_{j+1}", iteration=batches_done, value=metric) 
 
             log_str += AsciiTable(metric_table).table
             log_str += f"\nTotal loss {loss.item()}"
@@ -161,13 +182,17 @@ if __name__ == "__main__":
                 img_size=opt.img_size,
                 batch_size=8,
             )
-            evaluation_metrics = [
-                ("val_precision", precision.mean()),
-                ("val_recall", recall.mean()),
-                ("val_mAP", AP.mean()),
-                ("val_f1", f1.mean()),
-            ]
-            logger.list_of_scalars_summary(evaluation_metrics, epoch)
+            # evaluation_metrics = [
+            #     ("val_precision", precision.mean()),
+            #     ("val_recall", recall.mean()),
+            #     ("val_mAP", AP.mean()),
+            #     ("val_f1", f1.mean()),
+            # ]
+            # logger.list_of_scalars_summary(evaluation_metrics, epoch)
+            logger.report_scalar("eval", "val_precision", iteration=epoch, value=precision.mean())
+            logger.report_scalar("eval", "val_recall", iteration=epoch, value=recall.mean())
+            logger.report_scalar("eval", "val_mAP", iteration=epoch, value=AP.mean())
+            logger.report_scalar("eval", "val_f1", iteration=epoch, value=f1.mean())
 
             # Print class APs and mAP
             ap_table = [["Index", "Class name", "AP"]]

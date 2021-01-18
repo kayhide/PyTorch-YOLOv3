@@ -70,10 +70,13 @@ if __name__ == "__main__":
     parser.add_argument("--conf_thres", type=float, default=0.001, help="object confidence threshold")
     parser.add_argument("--nms_thres", type=float, default=0.5, help="iou thresshold for non-maximum suppression")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
+    parser.add_argument('--no_cuda', default=False, action='store_true', help='disables CUDA')
     parser.add_argument("--img_size", type=int, default=416, help="size of each image dimension")
     opt = parser.parse_args()
     print(opt)
 
+    if opt.no_cuda:
+        torch.cuda.is_available = lambda: False
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     data_config = parse_data_config(opt.data_config)
