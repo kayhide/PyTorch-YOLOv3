@@ -1,3 +1,25 @@
+This demonstrates to run training of YOLOv3 model with PyTorch and [ClearML](https://www.clear.ml/).
+
+Prerequisites:
+- ClearML server is running
+- ClearML configuration is done to talk with the server
+- Python is installed (See `shell.nix`)
+
+Install pip packages:
+```
+$ pip install -r requirements.txt
+```
+
+Create dataset and run training:
+
+```
+$ make
+```
+
+After successful running, visit the ClearML web server and you will see the "first" experiment under "PyTorch YOLO" project.
+
+----
+
 **WARNING: This repository has gone stale as I unfortunately do not have the time to maintain it anymore. If you would like to continue the development of it as a collaborator send me an email at eriklindernoren@gmail.com.**
 
 
