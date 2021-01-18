@@ -57,10 +57,11 @@ class ImageFolder(Dataset):
 
 
 class ListDataset(Dataset):
-    def __init__(self, list_path, img_size=416, augment=True, multiscale=True, normalized_labels=True):
+    def __init__(self, list_path, base_dir=".", img_size=416, augment=True, multiscale=True, normalized_labels=True):
         with open(list_path, "r") as file:
             self.img_files = file.readlines()
 
+        self.base_dir = os.path.dirname(list_path)
         self.label_files = [
             path.replace("images", "labels").replace(".png", ".txt").replace(".jpg", ".txt")
             for path in self.img_files
@@ -80,7 +81,9 @@ class ListDataset(Dataset):
         #  Image
         # ---------
 
-        img_path = self.img_files[index % len(self.img_files)].rstrip()
+        img_path = os.path.abspath(
+            os.path.join(self.base_dir, self.img_files[index % len(self.img_files)].rstrip())
+            )
 
         # Extract image as PyTorch tensor
         img = transforms.ToTensor()(Image.open(img_path).convert('RGB'))
@@ -100,7 +103,10 @@ class ListDataset(Dataset):
         #  Label
         # ---------
 
-        label_path = self.label_files[index % len(self.img_files)].rstrip()
+        label_path = os.path.abspath(
+            os.path.join(self.base_dir, self.label_files[index % len(self.img_files)].rstrip())
+            )
+
 
         targets = None
         if os.path.exists(label_path):

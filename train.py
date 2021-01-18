@@ -23,7 +23,7 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
-from clearml import Task, Logger
+from clearml import Task, Logger, Dataset
 
 if __name__ == "__main__":
     model_snapshots_path = os.getenv('TRAINS_ROOT')
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=8, help="size of each image batch")
     parser.add_argument("--gradient_accumulations", type=int, default=2, help="number of gradient accums before step")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
-    parser.add_argument("--data_config", type=str, default="config/coco.data", help="path to data config file")
+    parser.add_argument("--dataset", type=str, help="dataset id")
     parser.add_argument("--pretrained_weights", type=str, help="if specified starts from checkpoint model")
     parser.add_argument("--n_cpu", type=int, default=8, help="number of cpu threads to use during batch generation")
     parser.add_argument('--no_cuda', default=False, action='store_true', help='disables CUDA')
@@ -63,10 +63,10 @@ if __name__ == "__main__":
     os.makedirs("checkpoints", exist_ok=True)
 
     # Get data configuration
-    data_config = parse_data_config(opt.data_config)
-    train_path = data_config["train"]
-    valid_path = data_config["valid"]
-    class_names = load_classes(data_config["names"])
+    dataset_dir = Dataset.get(dataset_id=opt.dataset).get_local_copy()
+    train_path = os.path.join(dataset_dir, "training_set.txt")
+    valid_path = os.path.join(dataset_dir, "validation_set.txt")
+    class_names = load_classes(os.path.join(dataset_dir, "names"))
 
     # Initiate model
     model = Darknet(opt.model_def).to(device)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
             model.load_darknet_weights(opt.pretrained_weights)
 
     # Get dataloader
-    dataset = ListDataset(train_path, augment=True, multiscale=opt.multiscale_training)
+    dataset = ListDataset(train_path, base_dir=dataset_dir, augment=True, multiscale=opt.multiscale_training)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=opt.batch_size,
