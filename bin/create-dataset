@@ -57,8 +57,8 @@ cat $TRAINING_SET | copy-sample > "$DATASET_DIR/training_set.txt"
 cat $VALIDATION_SET | copy-sample > "$DATASET_DIR/validation_set.txt"
 cp "$NAMES" "$DATASET_DIR/names"
 
-clearml-data create --project "PyTorch Yolo" --name dataset | tee "$BASE_DIR/tmp/clearml-data.log"
-DATASET_ID="$(cat "$BASE_DIR/tmp/clearml-data.log" | sed -n 's/.*id=\(.*\)/\1/p')"
+clearml-data create --project "PyTorch Yolo" --name dataset
+DATASET_ID="$(cat ~/.clearml_data.json | jq -r '.id')"
 
 clearml-data add --id "$DATASET_ID" --files "$DATASET_DIR"
 clearml-data close --id "$DATASET_ID"
