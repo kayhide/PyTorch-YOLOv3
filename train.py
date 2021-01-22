@@ -15,6 +15,7 @@ import time
 import datetime
 import argparse
 import tqdm
+from tempfile import gettempdir
 
 import torch
 from torch.utils.data import DataLoader
@@ -203,3 +204,4 @@ if __name__ == "__main__":
 
         if epoch % opt.checkpoint_interval == 0:
             torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
+    torch.save(model.state_dict(), os.path.join(gettempdir(), "yolov3.pth"))
