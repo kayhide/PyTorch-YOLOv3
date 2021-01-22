@@ -7,9 +7,17 @@ detect: tmp/model_id
 .PHONY: detect
 
 
-tmp/dataset_id:
+tmp/dataset_id: tmp/training_set.txt tmp/validation_set.txt
 	bin/create-dataset
 
+tmp/training_set.txt: data/coco
+	head -n 8 data/coco/trainvalno5k.txt > $@
+
+tmp/validation_set.txt: data/coco
+	head -n 32 data/coco/5k.txt > $@
+
+data/coco:
+	cd data/coco && bash get_coco_dataset.sh
 
 tmp/model_id:
 	curl -X POST -H "Content-Type: application/json" \

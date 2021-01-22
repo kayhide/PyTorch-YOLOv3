@@ -1,8 +1,0 @@
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000009.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000025.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000030.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000034.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000036.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000049.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000061.jpg
-/home/kayhide/ghq/github.com/eriklindernoren/PyTorch-YOLOv3/data/coco/images/train2014/COCO_train2014_000000000064.jpg
