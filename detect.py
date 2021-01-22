@@ -21,11 +21,14 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
+from clearml.model import InputModel
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_folder", type=str, default="data/samples", help="path to dataset")
     parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
     parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
+    parser.add_argument("--model", type=str, help="model id")
     parser.add_argument("--class_path", type=str, default="data/coco.names", help="path to class label file")
     parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
     parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
@@ -46,12 +49,12 @@ if __name__ == "__main__":
     # Set up model
     model = Darknet(opt.model_def, img_size=opt.img_size).to(device)
 
-    if opt.weights_path.endswith(".weights"):
-        # Load darknet weights
-        model.load_darknet_weights(opt.weights_path)
+    weights = InputModel(opt.model).get_weights()
+    # weights = opt.weights_path
+    if weights.endswith(".weights"):
+        model.load_darknet_weights(weights)
     else:
-        # Load checkpoint weights
-        model.load_state_dict(torch.load(opt.weights_path))
+        model.load_state_dict(torch.load(weights))
 
     model.eval()  # Set in evaluation mode
 
@@ -102,7 +105,8 @@ if __name__ == "__main__":
 
         # Create plot
         img = np.array(Image.open(path))
-        plt.figure()
+        dpi = 100
+        plt.figure(figsize=(img.shape[1] / dpi, img.shape[0] / dpi), dpi=dpi)
         fig, ax = plt.subplots(1)
         ax.imshow(img)
 
@@ -114,11 +118,13 @@ if __name__ == "__main__":
             n_cls_preds = len(unique_labels)
             bbox_colors = random.sample(colors, n_cls_preds)
             for x1, y1, x2, y2, conf, cls_conf, cls_pred in detections:
+                x1 = max(0, x1)
+                y1 = max(0, y1)
 
-                print("\t+ Label: %s, Conf: %.5f" % (classes[int(cls_pred)], cls_conf.item()))
+                box_w = min(img.shape[1], x2 - x1)
+                box_h = min(img.shape[0], y2 - y1)
 
-                box_w = x2 - x1
-                box_h = y2 - y1
+                print("\t+ Label: %s, Conf: %.5f, Box: (x: %d, y: %d, w: %d, h: %d)" % (classes[int(cls_pred)], cls_conf.item(), x1, y1, box_w, box_h))
 
                 color = bbox_colors[int(np.where(unique_labels == int(cls_pred))[0])]
                 # Create a Rectangle patch
