@@ -27,6 +27,14 @@ $ make detect
 
 This task executes object detection over images under `data/samples` and emits result into `output`.
 
+:warning:
+For the sake of time, this runs with very small dataset and does not infer at all.
+
+If you want to try more proper training and inferance, update `tmp/training_set.txt` and `tmp/validation_set.txt`,
+which are sorced from `data/coco/trainvalno5k.txt`, `data/coco/5k.txt` respectively.
+
+And give a decent number to `--epoch` in the `make train`.
+
 ----
 
 **WARNING: This repository has gone stale as I unfortunately do not have the time to maintain it anymore. If you would like to continue the development of it as a collaborator send me an email at eriklindernoren@gmail.com.**
