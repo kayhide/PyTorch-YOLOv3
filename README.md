@@ -13,10 +13,19 @@ $ pip install -r requirements.txt
 Create dataset and run training:
 
 ```
-$ make
+$ make train
 ```
 
 After successful running, visit the ClearML web server and you will see the "first" experiment under "PyTorch YOLO" project.
+
+
+To run inferance:
+
+```
+$ make detect
+```
+
+This task executes object detection over images under `data/samples` and emits result into `output`.
 
 ----
 
