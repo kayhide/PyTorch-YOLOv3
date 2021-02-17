@@ -26,10 +26,10 @@ from clearml.model import InputModel
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_folder", type=str, default="data/samples", help="path to dataset")
-    parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
-    parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
+    # parser.add_argument("--model_def", type=str, default="config/yolov3.cfg", help="path to model definition file")
+    # parser.add_argument("--weights_path", type=str, default="weights/yolov3.weights", help="path to weights file")
     parser.add_argument("--model", type=str, help="model id")
-    parser.add_argument("--class_path", type=str, default="data/coco.names", help="path to class label file")
+    # parser.add_argument("--class_path", type=str, default="data/coco.names", help="path to class label file")
     parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
     parser.add_argument("--nms_thres", type=float, default=0.4, help="iou thresshold for non-maximum suppression")
     parser.add_argument("--batch_size", type=int, default=1, help="size of the batches")
@@ -47,14 +47,11 @@ if __name__ == "__main__":
     os.makedirs("output", exist_ok=True)
 
     # Set up model
-    model = Darknet(opt.model_def, img_size=opt.img_size).to(device)
-
-    weights = InputModel(opt.model).get_weights()
-    # weights = opt.weights_path
-    if weights.endswith(".weights"):
-        model.load_darknet_weights(weights)
-    else:
-        model.load_state_dict(torch.load(weights))
+    input_model = InputModel(opt.model)
+    weights = input_model.get_weights()  # Download weights from input model
+    cfg = input_model.config_text  # Get config which is attached to the input model
+    model = Darknet(cfg, img_size=opt.img_size).to(device)
+    model.load_state_dict(torch.load(weights))
 
     model.eval()  # Set in evaluation mode
 
@@ -65,7 +62,7 @@ if __name__ == "__main__":
         num_workers=opt.n_cpu,
     )
 
-    classes = load_classes(opt.class_path)  # Extracts class labels from file
+    classes = list(input_model.labels.keys())  # Load class labels from the input model
 
     Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 

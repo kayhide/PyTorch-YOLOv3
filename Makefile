@@ -19,7 +19,7 @@ tmp/validation_set.txt: data/coco
 data/coco:
 	cd data/coco && bash get_coco_dataset.sh
 
-tmp/model_id:
+tmp/model_id: tmp/dataset_id train.py
 	curl -X POST -H "Content-Type: application/json" \
 	-d '{"name": "yolov3", "order_by": "created"}' \
 	'http://adminuser:12345678@localhost:8008/models.get_all' | \
