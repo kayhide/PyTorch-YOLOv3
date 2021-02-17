@@ -69,6 +69,9 @@ if __name__ == "__main__":
     valid_path = os.path.join(dataset_dir, "validation_set.txt")
     class_names = load_classes(os.path.join(dataset_dir, "names"))
 
+    task.connect_configuration(opt.model_def)
+    task.connect_label_enumeration(dict(zip(class_names, range(len(class_names)))))
+
     # Initiate model
     model = Darknet(opt.model_def).to(device)
     model.apply(weights_init_normal)
